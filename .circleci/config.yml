@@ -1,0 +1,36 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: cimg/openjdk:14.0
+    steps:
+      - checkout
+      - run:
+          name: Compiling ViewMaxMemorySize.java
+          command: javac ViewMaxMemorySize.java
+      - store_artifacts:
+          path: ./ViewMaxMemorySize.class
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - ./
+
+  demo-run:
+    docker:
+      - image: cimg/openjdk:14.0
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          name: This should say 2048 MiB
+          command: java -Xmx1g -Xmx2g ViewMaxMemorySize
+
+workflows:
+  version: 2
+  demo:
+    jobs:
+      - build
+      - demo-run:
+          requires:
+            - build
